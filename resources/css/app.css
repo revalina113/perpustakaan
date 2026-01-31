@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Warna utama biru tua */
+:root {
+    --primary: #0B2B4A;
+    --primary-2: #0A2340;
+    --secondary: #0F4C81;
+    --bg: #F5F7FB;
+    --card: #FFFFFF;
+    --text: #0B1D33;
+    --muted: #7B8A9A;
+}
+
+/* Custom button */
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: var(--secondary);
+}
+
+/* Card */
+.card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
