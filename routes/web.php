@@ -210,7 +210,7 @@ Route::middleware(['auth','must.change.password'])->group(function () {
     Route::get('/change-password', [\App\Http\Controllers\Auth\ChangePasswordController::class, 'edit'])
         ->name('password.change');
     Route::post('/change-password', [\App\Http\Controllers\Auth\ChangePasswordController::class, 'update'])
-        ->name('password.update');
+        ->name('password.change.update');
 });
 
 // Graceful handler for GET /logout (some browsers/users might request /logout via GET)

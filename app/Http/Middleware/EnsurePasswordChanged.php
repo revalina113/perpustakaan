@@ -11,7 +11,7 @@ class EnsurePasswordChanged
     {
         if (auth()->check() && auth()->user()->must_change_password) {
             // allow access to the change-password routes and logout
-            if ($request->routeIs('password.change') || $request->routeIs('password.update') || $request->routeIs('logout') || $request->is('logout')) {
+            if ($request->routeIs('password.change') || $request->routeIs('password.change.update') || $request->routeIs('logout') || $request->is('logout')) {
                 return $next($request);
             }
 

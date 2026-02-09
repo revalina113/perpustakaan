@@ -10,7 +10,7 @@
                 <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded mb-4">{{ session('info') }}</div>
             @endif
 
-            <form method="POST" action="{{ route('password.update') }}">
+            <form method="POST" action="{{ route('password.change.update') }}">
                 @csrf
 
                 <div class="mb-4">
