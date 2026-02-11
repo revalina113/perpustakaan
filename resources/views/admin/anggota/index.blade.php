@@ -167,7 +167,64 @@
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Kelas</label>
-                    <input type="text" id="kelas" name="kelas" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <select id="kelas" name="kelas" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Pilih Kelas</option>
+                        <optgroup label="Kelas X">
+                            <option value="X ATPH 1">X ATPH 1</option>
+                            <option value="X APT 1">X APT 1</option>
+                            <option value="X DKV 1">X DKV 1</option>
+                            <option value="X RPL 1">X RPL 1</option>
+                            <option value="X TKJ 1">X TKJ 1</option>
+                            <option value="X TBSM 1">X TBSM 1</option>
+                            <option value="X TKR 1">X TKR 1</option>
+                            <option value="X ATPH 2">X ATPH 2</option>
+                            <option value="X APT 2">X APT 2</option>
+                            <option value="X DKV 2">X DKV 2</option>
+                            <option value="X RPL 2">X RPL 2</option>
+                            <option value="X TKJ 2">X TKJ 2</option>
+                            <option value="X TBSM 2">X TBSM 2</option>
+                            <option value="X TKR 2">X TKR 2</option>
+                            <option value="X DKV 3">X DKV 3</option>
+                            <option value="X TBSM 3">X TBSM 3</option>
+                            <option value="X TKR 3">X TKR 3</option>
+                        </optgroup>
+                        <optgroup label="Kelas XI">
+                            <option value="XI ATPH 1">XI ATPH 1</option>
+                            <option value="XI APT 1">XI APT 1</option>
+                            <option value="XI DKV 1">XI DKV 1</option>
+                            <option value="XI RPL 1">XI RPL 1</option>
+                            <option value="XI TKJ 1">XI TKJ 1</option>
+                            <option value="XI TBSM 1">XI TBSM 1</option>
+                            <option value="XI TKR 1">XI TKR 1</option>
+                            <option value="XI ATPH 2">XI ATPH 2</option>
+                            <option value="XI APT 2">XI APT 2</option>
+                            <option value="XI DKV 2">XI DKV 2</option>
+                            <option value="XI RPL 2">XI RPL 2</option>
+                            <option value="XI TKJ 2">XI TKJ 2</option>
+                            <option value="XI TBSM 2">XI TBSM 2</option>
+                            <option value="XI TKR 2">XI TKR 2</option>
+                            <option value="XI TBSM 3">XI TBSM 3</option>
+                            <option value="XI TKR 3">XI TKR 3</option>
+                        </optgroup>
+                        <optgroup label="Kelas XII">
+                            <option value="XII ATPH 1">XII ATPH 1</option>
+                            <option value="XII APT 1">XII APT 1</option>
+                            <option value="XII DKV 1">XII DKV 1</option>
+                            <option value="XII RPL 1">XII RPL 1</option>
+                            <option value="XII TKJ 1">XII TKJ 1</option>
+                            <option value="XII TBSM 1">XII TBSM 1</option>
+                            <option value="XII TKR 1">XII TKR 1</option>
+                            <option value="XII ATPH 2">XII ATPH 2</option>
+                            <option value="XII APT 2">XII APT 2</option>
+                            <option value="XII DKV 2">XII DKV 2</option>
+                            <option value="XII RPL 2">XII RPL 2</option>
+                            <option value="XII TKJ 2">XII TKJ 2</option>
+                            <option value="XII TBSM 2">XII TBSM 2</option>
+                            <option value="XII TKR 2">XII TKR 2</option>
+                            <option value="XII TBSM 3">XII TBSM 3</option>
+                            <option value="XII TKR 3">XII TKR 3</option>
+                        </optgroup>
+                    </select>
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>

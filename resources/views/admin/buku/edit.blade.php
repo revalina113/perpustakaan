@@ -63,6 +63,28 @@
                 @enderror
             </div>
 
+            <!-- Kategori -->
+            <div>
+                <label for="kategori" class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                <select name="kategori" id="kategori" required
+                       class="w-full px-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 {{ $errors->has('kategori') ? 'border-red-500' : 'border-gray-300' }}">
+                    <option value="">Pilih Kategori</option>
+                    <option value="Novel" {{ old('kategori', $buku->kategori) === 'Novel' ? 'selected' : '' }}>Novel</option>
+                    <option value="Sejarah" {{ old('kategori', $buku->kategori) === 'Sejarah' ? 'selected' : '' }}>Sejarah</option>
+                    <option value="Pelajaran" {{ old('kategori', $buku->kategori) === 'Pelajaran' ? 'selected' : '' }}>Pelajaran</option>
+                    <option value="Komik" {{ old('kategori', $buku->kategori) === 'Komik' ? 'selected' : '' }}>Komik</option>
+                    <option value="Motivasi" {{ old('kategori', $buku->kategori) === 'Motivasi' ? 'selected' : '' }}>Motivasi</option>
+                    <option value="Teknologi" {{ old('kategori', $buku->kategori) === 'Teknologi' ? 'selected' : '' }}>Teknologi</option>
+                    <option value="Agama" {{ old('kategori', $buku->kategori) === 'Agama' ? 'selected' : '' }}>Agama</option>
+                    <option value="Biografi" {{ old('kategori', $buku->kategori) === 'Biografi' ? 'selected' : '' }}>Biografi</option>
+                    <option value="Ensiklopedia" {{ old('kategori', $buku->kategori) === 'Ensiklopedia' ? 'selected' : '' }}>Ensiklopedia</option>
+                    <option value="Lainnya" {{ old('kategori', $buku->kategori) === 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                </select>
+                @error('kategori')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Tahun -->
             <div>
                 <label for="tahun" class="block text-sm font-medium text-gray-700 mb-2">Tahun Terbit</label>

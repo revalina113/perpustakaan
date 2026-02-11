@@ -98,16 +98,6 @@ class PeminjamanController extends Controller
             if ($existing) {
                 $canBorrow = false;
                 $borrowMessage = 'Anda sudah meminjam buku ini.';
-            } else {
-                // Check maximum loan limit (3 books)
-                $currentLoans = Peminjaman::where('anggota_id', $anggota->id)
-                    ->where('status', 'dipinjam')
-                    ->count();
-
-                if ($currentLoans >= 3) {
-                    $canBorrow = false;
-                    $borrowMessage = 'Anda sudah mencapai batas maksimal peminjaman (3 buku).';
-                }
             }
         }
 
@@ -225,15 +215,6 @@ class PeminjamanController extends Controller
 
         if ($existing) {
             return back()->with('error', 'Anda sudah meminjam buku ini.');
-        }
-
-        // Check maximum loan limit (3 books)
-        $currentLoans = Peminjaman::where('anggota_id', $anggota->id)
-            ->where('status', 'dipinjam')
-            ->count();
-
-        if ($currentLoans >= 3) {
-            return back()->with('error', 'Anda sudah mencapai batas maksimal peminjaman (3 buku).');
         }
 
         // Get active loan rules

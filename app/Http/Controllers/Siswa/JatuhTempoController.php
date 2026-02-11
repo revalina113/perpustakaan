@@ -9,6 +9,7 @@ use App\Models\PembayaranDenda;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class JatuhTempoController extends Controller
@@ -38,13 +39,34 @@ class JatuhTempoController extends Controller
             $dendaPerHari = $aturan ? $aturan->denda_per_hari : 1000;
             $totalDenda = $hariTerlambat * $dendaPerHari;
 
+            // Cek pembayaran terakhir untuk peminjaman ini
+            $latestPayment = $pinjam->pembayaranDenda()->orderBy('created_at', 'desc')->first();
+
+            // Prioritaskan field pada peminjaman (status_verifikasi) jika tersedia, jika tidak, turunkan dari pembayaran terakhir
+            $statusVerif = $pinjam->status_verifikasi ?? null;
+            if (!$statusVerif) {
+                $statusVerif = $latestPayment ? match($latestPayment->status_pembayaran) {
+                    'menunggu_verifikasi' => 'menunggu',
+                    'lunas' => 'terverifikasi',
+                    'ditolak' => 'ditolak',
+                    default => 'belum_bayar',
+                } : 'belum_bayar';
+            }
+
+            $sudahBayar = $latestPayment && $latestPayment->status_pembayaran === 'lunas';
+            $menunggu = $statusVerif === 'menunggu';
+
             return [
                 'peminjaman' => $pinjam,
                 'status' => $hariTerlambat > 0 ? 'terlambat' : 'tepat_waktu',
                 'hari_terlambat' => $hariTerlambat,
                 'denda_per_hari' => $dendaPerHari,
                 'total_denda' => $totalDenda,
-                'sudah_bayar' => false, // akan dicek dari tabel pembayaran_denda
+                'sudah_bayar' => $sudahBayar,
+                'pembayaran_status' => $latestPayment?->status_pembayaran,
+                'pembayaran_id' => $latestPayment?->id,
+                'menunggu_verifikasi' => $menunggu,
+                'status_verifikasi' => $statusVerif,
             ];
         });
 
@@ -190,6 +212,11 @@ class JatuhTempoController extends Controller
                 'status_pembayaran' => 'menunggu_verifikasi',
                 'tanggal_bayar' => now()->toDateString(),
             ]);
+
+            // Tandai peminjaman sebagai menunggu verifikasi (jika kolom ada)
+            if (Schema::hasColumn('peminjaman', 'status_verifikasi')) {
+                $peminjaman->update(['status_verifikasi' => 'menunggu']);
+            }
 
             DB::commit();
 

@@ -24,8 +24,17 @@ class PengembalianController extends Controller
 
         $peminjaman = Peminjaman::where('anggota_id', $anggota->id)
             ->where('status', 'dipinjam')
-            ->with('buku')
+            ->with(['buku', 'pembayaranDenda'])
             ->paginate(10);
+
+        // Attach latest payment status flags to each peminjaman for view
+        $peminjaman->getCollection()->transform(function($pinjam) {
+            $latest = $pinjam->pembayaranDenda()->orderBy('created_at', 'desc')->first();
+            $pinjam->pembayaran_status = $latest?->status_pembayaran;
+            // Prioritaskan field status_verifikasi pada peminjaman jika ada
+            $pinjam->menunggu_verifikasi = ($pinjam->status_verifikasi ?? null) === 'menunggu' || ($latest && $latest->status_pembayaran === 'menunggu_verifikasi');
+            return $pinjam;
+        });
 
         return view('siswa.pengembalian.index', compact('peminjaman'));
     }
@@ -76,8 +85,8 @@ class PengembalianController extends Controller
                 $message .= ' Total denda: Rp' . number_format($denda, 0, ',', '.');
             }
 
-            // Redirect to 'jatuh-tempo' page so siswa can see status & denda
-            return redirect()->route('siswa.jatuh-tempo.index')->with('success', $message);
+            // Redirect to siswa dashboard after successful return
+            return redirect()->route('siswa.dashboard')->with('success', $message);
         } catch (\Exception $e) {
             DB::rollback();
             return back()->with('error', 'Terjadi kesalahan saat mengembalikan buku.');

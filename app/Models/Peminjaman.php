@@ -19,6 +19,7 @@ class Peminjaman extends Model
         'tanggal_kembali',
         'status',
         'total_denda',
+        'status_verifikasi', // baru: 'belum_bayar', 'menunggu', 'terverifikasi', 'ditolak'
     ];
 
     protected $casts = [
@@ -94,6 +95,51 @@ class Peminjaman extends Model
         }
 
         return 'bg-green-100 text-green-800';
+    }
+
+    // Method untuk mendapatkan status verifikasi pembayaran (badge)
+    public function getVerifikasiBadgeAttribute()
+    {
+        $st = $this->status_verifikasi ?? 'belum_bayar';
+
+        return match($st) {
+            'menunggu' => 'bg-yellow-100 text-yellow-800',
+            'terverifikasi' => 'bg-green-100 text-green-800',
+            'ditolak' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getVerifikasiTextAttribute()
+    {
+        $st = $this->status_verifikasi ?? 'belum_bayar';
+
+        return match($st) {
+            'menunggu' => 'Menunggu Verifikasi Admin',
+            'terverifikasi' => 'Terverifikasi',
+            'ditolak' => 'Ditolak',
+            default => 'Belum Bayar',
+        };
+    }
+
+    public function isVerifikasiTerverifikasi()
+    {
+        return ($this->status_verifikasi ?? 'belum_bayar') === 'terverifikasi';
+    }
+
+    public function isVerifikasiMenunggu()
+    {
+        return ($this->status_verifikasi ?? 'belum_bayar') === 'menunggu';
+    }
+
+    public function isVerifikasiDitolak()
+    {
+        return ($this->status_verifikasi ?? 'belum_bayar') === 'ditolak';
+    }
+
+    public function isVerifikasiBelumBayar()
+    {
+        return ($this->status_verifikasi ?? 'belum_bayar') === 'belum_bayar';
     }
 
     // Cek apakah denda sudah dibayar (lunas)

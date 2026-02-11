@@ -38,6 +38,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Jatuh Tempo</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterlambatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verifikasi</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Denda</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -61,6 +62,9 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Belum Bayar</span>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
                         </tr>
@@ -86,18 +90,46 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
                                 {{ $item['hari_terlambat'] }} hari
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                {{-- Verifikasi status: gunakan status_verifikasi jika ada (dari model), jika tidak gunakan status hasil pembayaran --}}
+                                @php
+                                    $ver = $item['status_verifikasi'] ?? ($item['pembayaran_status'] === 'menunggu_verifikasi' ? 'menunggu' : ($item['pembayaran_status'] === 'lunas' ? 'terverifikasi' : ($item['pembayaran_status'] === 'ditolak' ? 'ditolak' : 'belum_bayar')));
+                                @endphp
+
+                                @if($ver === 'belum_bayar')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Belum Bayar</span>
+                                @elseif($ver === 'menunggu')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Menunggu Verifikasi Admin</span>
+                                @elseif($ver === 'terverifikasi')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">✅ Terverifikasi</span>
+                                @elseif($ver === 'ditolak')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Ditolak</span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Belum Bayar</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
                                 Rp{{ number_format($item['total_denda'], 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button type="button"
-                                        data-peminjaman-id="{{ $item['peminjaman']->id }}"
-                                        data-book-title="{{ optional($item['peminjaman']->buku)->judul ?? 'Judul tidak tersedia' }}"
-                                        data-denda-amount="{{ $item['total_denda'] }}"
-                                        onclick="openPaymentModal(this)"
-                                        class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    Bayar Denda
-                                </button>
+                                @php
+                                    $ver = $item['status_verifikasi'] ?? ($item['pembayaran_status'] === 'menunggu_verifikasi' ? 'menunggu' : ($item['pembayaran_status'] === 'lunas' ? 'terverifikasi' : ($item['pembayaran_status'] === 'ditolak' ? 'ditolak' : 'belum_bayar')));
+                                @endphp
+
+                                @if($ver === 'menunggu')
+                                    <button type="button" disabled class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-yellow-400 text-white cursor-not-allowed">⏳ Menunggu Verifikasi</button>
+                                @elseif($ver === 'terverifikasi')
+                                    <a href="{{ route('peminjaman.resi', $item['peminjaman']->id) }}" class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700">✅ Lunas - Lihat Resi</a>
+                                @else
+                                    <button type="button"
+                                            data-peminjaman-id="{{ $item['peminjaman']->id }}"
+                                            data-book-title="{{ optional($item['peminjaman']->buku)->judul ?? 'Judul tidak tersedia' }}"
+                                            data-denda-amount="{{ $item['total_denda'] }}"
+                                            onclick="openPaymentModal(this)"
+                                            class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        Bayar Denda
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                         @endforeach

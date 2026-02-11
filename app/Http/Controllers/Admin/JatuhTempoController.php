@@ -59,12 +59,34 @@ class JatuhTempoController extends Controller
 
     public function show($id)
     {
-        $peminjaman = Peminjaman::with(['anggota', 'buku', 'pembayaranDenda'])->findOrFail($id);
+        // Eager load relasi yang diperlukan
+        $peminjaman = Peminjaman::with([
+            'anggota',
+            'buku',
+            'pembayaranDenda'
+        ])->findOrFail($id);
+
+        // Ambil aturan peminjaman aktif
         $aturan = AturanPeminjaman::aktif();
 
-        // Hitung denda
-        $hariTerlambat = $peminjaman->hari_terlambat;
+        // Hitung hari terlambat dari tanggal jatuh tempo sampai hari ini
+        if ($peminjaman->status === 'dikembalikan' || !$peminjaman->tanggal_jatuh_tempo) {
+            $hariTerlambat = 0;
+        } else {
+            $hariIni = now()->startOfDay();
+            $jatuhTempo = $peminjaman->tanggal_jatuh_tempo->startOfDay();
+
+            if ($hariIni->lte($jatuhTempo)) {
+                $hariTerlambat = 0;
+            } else {
+                $hariTerlambat = $hariIni->diffInDays($jatuhTempo);
+            }
+        }
+
+        // Ambil denda per hari dari aturan peminjaman
         $dendaPerHari = $aturan ? $aturan->denda_per_hari : 1000;
+
+        // Hitung total denda
         $totalDenda = $hariTerlambat * $dendaPerHari;
 
         return response()->json([

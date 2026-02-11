@@ -12,6 +12,7 @@ class Buku extends Model
         'judul',
         'penulis',
         'penerbit',
+        'kategori',
         'tahun',
         'stok',
         'gambar'

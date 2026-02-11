@@ -56,19 +56,33 @@
 
                     <!-- Tanda merah jika ada denda yang belum dibayar (tanpa menampilkan nominal) -->
                     @if($pinjam->denda > 0 && !$pinjam->isDendaLunas())
-                    <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                        <p class="text-sm text-red-600 font-medium">
-                            Denda belum dibayar — silakan bayar di halaman <a href="{{ route('siswa.jatuh-tempo.index') }}" class="underline font-semibold">Jatuh Tempo & Denda</a>
-                        </p>
-                    </div>
+                        @if($pinjam->menunggu_verifikasi)
+                            <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                                <p class="text-sm text-yellow-800 font-medium">
+                                    Bukti pembayaran telah dikirim dan <span class="font-semibold">menunggu verifikasi admin</span>. Silakan tunggu atau hubungi admin untuk konfirmasi.
+                                </p>
+                            </div>
+                        @else
+                            <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                                <p class="text-sm text-red-600 font-medium">
+                                    Denda belum dibayar — silakan bayar di halaman <a href="{{ route('siswa.jatuh-tempo.index') }}" class="underline font-semibold">Jatuh Tempo & Denda</a>
+                                </p>
+                            </div>
+                        @endif
                     @endif
 
                     <!-- Action Button -->
                     <div class="mt-4">
                         @if($pinjam->denda > 0 && !$pinjam->isDendaLunas())
-                            <a href="{{ route('siswa.jatuh-tempo.index') }}" class="w-full inline-block text-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
-                                Bayar Denda Terlebih Dahulu
-                            </a>
+                            @if($pinjam->menunggu_verifikasi)
+                                <button type="button" disabled class="w-full inline-block text-center bg-yellow-400 text-white py-2 px-4 rounded-lg cursor-not-allowed">
+                                    ⏳ Menunggu Verifikasi
+                                </button>
+                            @else
+                                <a href="{{ route('siswa.jatuh-tempo.index') }}" class="w-full inline-block text-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                                    Bayar Dan Kembalikan
+                                </a>
+                            @endif
                         @else
                         <form action="{{ route('siswa.pengembalian.store') }}" method="POST" class="">
                             @csrf

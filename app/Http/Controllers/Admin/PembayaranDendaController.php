@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PembayaranDenda;
+use App\Models\AturanPeminjaman;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PembayaranDendaController extends Controller
 {
@@ -42,8 +45,32 @@ class PembayaranDendaController extends Controller
     public function show($id)
     {
         $pembayaran = PembayaranDenda::with(['peminjaman.buku', 'anggota'])->findOrFail($id);
+        
+        // Hitung hari terlambat dan denda dengan logika yang sama seperti di controller siswa
+        $peminjaman = $pembayaran->peminjaman;
+        
+        // Hitung hari terlambat dari tanggal jatuh tempo sampai hari ini
+        if ($peminjaman->status === 'dikembalikan' || !$peminjaman->tanggal_jatuh_tempo) {
+            $hariTerlambat = 0;
+        } else {
+            $hariIni = now()->startOfDay();
+            $jatuhTempo = $peminjaman->tanggal_jatuh_tempo->startOfDay();
 
-        return view('admin.pembayaran-denda.show', compact('pembayaran'));
+            if ($hariIni->lte($jatuhTempo)) {
+                $hariTerlambat = 0;
+            } else {
+                $hariTerlambat = $hariIni->diffInDays($jatuhTempo);
+            }
+        }
+
+        // Ambil denda per hari dari aturan peminjaman
+        $aturan = AturanPeminjaman::aktif();
+        $dendaPerHari = $aturan ? $aturan->denda_per_hari : 1000;
+
+        // Hitung total denda
+        $totalDenda = $hariTerlambat * $dendaPerHari;
+
+        return view('admin.pembayaran-denda.show', compact('pembayaran', 'hariTerlambat', 'dendaPerHari', 'totalDenda'));
     }
 
     public function updateStatus(Request $request, $id)
@@ -74,14 +101,56 @@ class PembayaranDendaController extends Controller
 
     public function verifikasi($id)
     {
-        $pembayaran = PembayaranDenda::findOrFail($id);
+        $pembayaran = PembayaranDenda::with('peminjaman.buku')->findOrFail($id);
 
-        $pembayaran->update(['status_pembayaran' => 'lunas']);
+        DB::beginTransaction();
+        try {
+            // Mark payment as paid
+            $pembayaran->update([
+                'status_pembayaran' => 'lunas',
+                'tanggal_bayar' => now()->toDateString(),
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pembayaran denda telah diverifikasi dan ditandai lunas.'
-        ]);
+            // If related peminjaman still exists, update verifikasi/status safely
+            $peminjaman = $pembayaran->peminjaman;
+            if ($peminjaman) {
+                // Set verifikasi status on peminjaman only if column exists
+                if (\Illuminate\Support\Facades\Schema::hasColumn('peminjaman', 'status_verifikasi')) {
+                    $peminjaman->update([
+                        'status_verifikasi' => 'terverifikasi',
+                        'total_denda' => $pembayaran->jumlah_denda,
+                    ]);
+                } else {
+                    // Fallback: still set total_denda if possible
+                    $peminjaman->update(['total_denda' => $pembayaran->jumlah_denda]);
+                }
+
+                if ($peminjaman->status === 'dipinjam') {
+                    $peminjaman->update([
+                        'status' => 'dikembalikan',
+                        'tanggal_kembali' => now(),
+                    ]);
+
+                    // Increment stok buku hanya jika ada dan belum dikembalikan sebelumnya
+                    if ($peminjaman->buku) {
+                        $peminjaman->buku->increment('stok');
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran denda telah diverifikasi dan ditandai lunas.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memverifikasi pembayaran: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function bulkVerifikasi(Request $request)
@@ -93,12 +162,54 @@ class PembayaranDendaController extends Controller
 
         $ids = $request->ids;
 
-        PembayaranDenda::whereIn('id', $ids)->update(['status_pembayaran' => 'lunas']);
+        $payments = PembayaranDenda::with('peminjaman.buku')->whereIn('id', $ids)->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pembayaran yang dipilih berhasil diverifikasi.'
-        ]);
+        DB::beginTransaction();
+        try {
+            foreach ($payments as $pembayaran) {
+                $pembayaran->update([
+                    'status_pembayaran' => 'lunas',
+                    'tanggal_bayar' => now()->toDateString(),
+                ]);
+
+                $peminjaman = $pembayaran->peminjaman;
+                if ($peminjaman) {
+                        // Update status_verifikasi only if column exists
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('peminjaman', 'status_verifikasi')) {
+                            $peminjaman->update([
+                                'status_verifikasi' => 'terverifikasi',
+                                'total_denda' => $pembayaran->jumlah_denda,
+                            ]);
+                        } else {
+                            $peminjaman->update(['total_denda' => $pembayaran->jumlah_denda]);
+                        }
+
+                    if ($peminjaman->status === 'dipinjam') {
+                        $peminjaman->update([
+                            'status' => 'dikembalikan',
+                            'tanggal_kembali' => now(),
+                        ]);
+
+                        if ($peminjaman->buku) {
+                            $peminjaman->buku->increment('stok');
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran yang dipilih berhasil diverifikasi.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memverifikasi beberapa pembayaran: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function tolak(Request $request, $id)
@@ -113,6 +224,14 @@ class PembayaranDendaController extends Controller
             'status_pembayaran' => 'ditolak',
             'catatan_admin' => $request->catatan_admin
         ]);
+
+        // Set peminjaman verifikasi status to 'ditolak' if exists
+        $peminjaman = $pembayaran->peminjaman;
+        if ($peminjaman) {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('peminjaman', 'status_verifikasi')) {
+                    $peminjaman->update(['status_verifikasi' => 'ditolak']);
+                }
+        }
 
         return response()->json([
             'success' => true,

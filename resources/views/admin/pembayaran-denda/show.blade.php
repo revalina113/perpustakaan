@@ -52,15 +52,15 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center p-4 bg-red-50 rounded-lg border border-red-200">
                         <span class="text-gray-700 font-medium">Hari Terlambat:</span>
-                        <span class="text-2xl font-bold text-red-600">{{ $pembayaran->peminjaman->hari_terlambat }} hari</span>
+                        <span class="text-2xl font-bold text-red-600">{{ $hariTerlambat }} hari</span>
                     </div>
                     <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                         <span class="text-gray-700 font-medium">Denda per Hari:</span>
-                        <span class="text-lg font-semibold text-gray-900">Rp{{ number_format($pembayaran->jumlah_pembayaran / max($pembayaran->peminjaman->hari_terlambat, 1), 0, ',', '.') }}</span>
+                        <span class="text-lg font-semibold text-gray-900">Rp{{ number_format($dendaPerHari, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <span class="text-gray-700 font-medium text-lg">Total Denda:</span>
-                        <span class="text-3xl font-bold text-blue-600">Rp{{ number_format($pembayaran->jumlah_pembayaran, 0, ',', '.') }}</span>
+                        <span class="text-3xl font-bold text-blue-600">Rp{{ number_format($totalDenda, 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>
