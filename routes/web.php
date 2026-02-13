@@ -12,6 +12,7 @@ use App\Http\Controllers\Siswa\PengembalianController;
 use App\Http\Controllers\Siswa\JatuhTempoController;
 use App\Http\Controllers\Admin\JatuhTempoController as AdminJatuhTempoController;
 use App\Http\Controllers\Admin\PembayaranDendaController;
+use App\Http\Controllers\Admin\PengunjungController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -66,7 +67,13 @@ Route::middleware(['auth','must.change.password', 'isAdmin'])
         // Route::get('profil', function() {
         //     return view('siswa.profil');
         // })->name('profil');
+        // Export data to Excel (must come before resource declaration
+        // so the 'export' segment isn't treated as a {transaksi} parameter)
+        Route::get('transaksi/export', [TransaksiController::class, 'export'])
+            ->name('transaksi.export');
+
         Route::resource('transaksi', TransaksiController::class);
+        
         Route::post('transaksi/{id}/kembalikan', [TransaksiController::class, 'markAsReturned'])
             ->name('transaksi.kembalikan');
         Route::get('transaksi-search', [TransaksiController::class, 'search'])
@@ -104,6 +111,11 @@ Route::middleware(['auth','must.change.password', 'isAdmin'])
             ->name('jatuh-tempo.show');
         Route::get('jatuh-tempo/bukti/{id}', [AdminJatuhTempoController::class, 'viewBukti'])
             ->name('jatuh-tempo.bukti');
+
+        // pengunjung management
+        Route::resource('pengunjung', PengunjungController::class);
+        Route::get('grafik-kunjungan', [PengunjungController::class, 'grafik'])
+            ->name('pengunjung.grafik');
     });
 
 /*

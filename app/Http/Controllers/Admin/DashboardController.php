@@ -7,6 +7,7 @@ use App\Models\Buku;
 use App\Models\User;
 use App\Models\Peminjaman;
 use App\Models\PembayaranDenda;
+use App\Models\Pengunjung;
 
 class DashboardController extends Controller
 {
@@ -37,6 +38,7 @@ class DashboardController extends Controller
             'total_buku' => Buku::count(),
             'total_siswa' => User::where('role', 'siswa')->count(),
             'total_peminjaman' => Peminjaman::count(),
+            'total_pengunjung_hari_ini' => \App\Models\Pengunjung::whereDate('tanggal_kunjungan', now())->count(),
             'total_siswa_terlambat' => $totalSiswaTerlambat,
             'peminjamanTerlambat' => $peminjamanTerlambat,
             'pending_payments_count' => $pendingPaymentsCount,

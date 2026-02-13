@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Peminjaman;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\DataTransaksiExport;
 
 class TransaksiController extends Controller
 {
@@ -48,6 +50,20 @@ class TransaksiController extends Controller
             'terlambat',
             'peminjaman'
         ));
+    }
+
+    /**
+     * Export transaksi data to an Excel file.
+     *
+     * Only administrators can access this route since the controller
+     * is already protected by the isAdmin middleware on the route group.
+     *
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function export()
+    {
+        $fileName = 'data_transaksi_' . now()->format('Y-m-d') . '.xlsx';
+        return Excel::download(new DataTransaksiExport, $fileName);
     }
 
     public function markAsReturned($id)

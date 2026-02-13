@@ -27,4 +27,9 @@ class Anggota extends Model
     {
         return $this->hasOne(User::class, 'anggota_id');
     }
+
+    public function pengunjung()
+    {
+        return $this->hasMany(Pengunjung::class, 'anggota_id');
+    }
 }
